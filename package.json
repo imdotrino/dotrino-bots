@@ -21,7 +21,7 @@
   "dependencies": {
     "@dotrino/identity": "file:../dotrino-identity",
     "@dotrino/lobby": "file:../dotrino-lobby",
-    "@dotrino/proxy-client": "^0.6.1",
+    "@dotrino/proxy-client": "0.6.3",
     "stockfish": "^18.0.7",
     "ws": "^8.18.0"
   },
