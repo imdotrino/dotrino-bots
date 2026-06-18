@@ -1,0 +1,33 @@
+{
+  "name": "@dotrino/bots",
+  "version": "0.1.0",
+  "description": "Colección de bots headless que simulan usuarios reales en las apps del ecosistema Dotrino (identidad propia, transporte por el proxy, cerebro DeepSeek, latencias humanas).",
+  "type": "module",
+  "private": true,
+  "bin": {
+    "cc-bots": "./src/run.js"
+  },
+  "scripts": {
+    "start": "node src/run.js",
+    "chat": "node src/run.js --app chat",
+    "pm2:gen": "node src/gen-ecosystem.js",
+    "pm2:start": "pm2 start ecosystem.config.cjs",
+    "pm2:stop": "pm2 stop ccbots",
+    "pm2:restart": "pm2 restart ccbots",
+    "pm2:delete": "pm2 delete ccbots",
+    "pm2:logs": "pm2 logs ccbots",
+    "pm2:status": "pm2 status"
+  },
+  "dependencies": {
+    "@dotrino/identity": "file:../dotrino-identity",
+    "@dotrino/lobby": "file:../dotrino-lobby",
+    "@dotrino/proxy-client": "^0.6.1",
+    "stockfish": "^18.0.7",
+    "ws": "^8.18.0"
+  },
+  "devDependencies": {
+    "pm2": "^5.4.3"
+  },
+  "author": "seyacat",
+  "license": "MIT"
+}

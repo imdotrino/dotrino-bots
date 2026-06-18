@@ -1,0 +1,10 @@
+node_modules/
+identities/
+logs/
+*.log
+.env
+bots.config.json
+node_modules
+dist
+build
+.DS_Store
