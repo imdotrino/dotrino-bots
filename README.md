@@ -1,5 +1,7 @@
 # dotrino-bots
 
+> **Parte del ecosistema [Dotrino](https://dotrino.com).** Misión: aplicaciones que resuelven problemas comunes, respetando tu privacidad — sin anuncios, sin cookies, sin rastreo de datos, sin vender tu identidad a nadie.
+
 Colección de **bots headless** que simulan usuarios reales en las apps del
 ecosistema Dotrino. Cada bot:
 
