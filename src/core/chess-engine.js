@@ -18,7 +18,7 @@ let _cache = null
 
 export async function loadChessEngine () {
   if (_cache) return _cache
-  const appDir = process.env.CHESS_APP_DIR || path.resolve(REPO_ROOT, '..', 'simple-websocket-chess')
+  const appDir = process.env.CHESS_APP_DIR || path.resolve(REPO_ROOT, '..', 'dotrino-chess')
   const rules = await import(pathToFileURL(path.join(appDir, 'src/utils/chessRules.js')).href)
   const { makeChessEngine } = await import(pathToFileURL(path.join(appDir, 'src/game/chessAdapter.js')).href)
   _cache = { rules, makeChessEngine, appDir }

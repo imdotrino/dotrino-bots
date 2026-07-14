@@ -31,7 +31,7 @@ let _cache = null
 
 export async function loadCuarentaEngine () {
   if (_cache) return _cache
-  const appDir = process.env.CUARENTA_APP_DIR || path.resolve(REPO_ROOT, '..', 'cuarenta')
+  const appDir = process.env.CUARENTA_APP_DIR || path.resolve(REPO_ROOT, '..', 'dotrino-cuarenta')
   const engineMod = await import(pathToFileURL(path.join(appDir, 'src/game/cuarentaEngine.js')).href)
   const rules = await import(pathToFileURL(path.join(appDir, 'src/game/cuarentaRules.js')).href)
   _cache = {
