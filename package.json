@@ -1,7 +1,7 @@
 {
   "name": "@dotrino/bots",
   "version": "0.1.0",
-  "description": "Colección de bots headless que simulan usuarios reales en las apps del ecosistema Dotrino (identidad propia, transporte por el proxy, cerebro DeepSeek, latencias humanas).",
+  "description": "Colecci\u00f3n de bots headless que simulan usuarios reales en las apps del ecosistema Dotrino (identidad propia, transporte por el proxy, cerebro DeepSeek, latencias humanas).",
   "type": "module",
   "private": true,
   "bin": {
@@ -16,7 +16,8 @@
     "pm2:restart": "pm2 restart ccbots",
     "pm2:delete": "pm2 delete ccbots",
     "pm2:logs": "pm2 logs ccbots",
-    "pm2:status": "pm2 status"
+    "pm2:status": "pm2 status",
+    "type-check": "tsc --noEmit"
   },
   "dependencies": {
     "@dotrino/identity": "file:../dotrino-identity",
@@ -26,7 +27,9 @@
     "ws": "^8.18.0"
   },
   "devDependencies": {
-    "pm2": "^5.4.3"
+    "pm2": "^5.4.3",
+    "typescript": "5.9.3",
+    "@types/node": "^22.0.0"
   },
   "author": "seyacat",
   "license": "MIT"
