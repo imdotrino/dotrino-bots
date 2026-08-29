@@ -369,7 +369,7 @@ export class CuarentaBot {
   }
 
   _onClosed () {
-    this.log('sala cerrada')
+    this.log('room closed')
     if (this.role === 'host') this._reopenSoon('closed')
     else this._afterLeaveRescan()
   }

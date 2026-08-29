@@ -125,7 +125,7 @@ function main () {
         : '#' + b.room
     console.log(`  ccbot-${b.app}-${b.name.toLowerCase()}  →  ${detail}`)
   }
-  console.log('\nArrancar:  npx pm2 start ecosystem.config.cjs')
+  console.log('\nStart with:  npx pm2 start ecosystem.config.cjs')
 }
 
 main()

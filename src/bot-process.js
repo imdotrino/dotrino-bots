@@ -108,7 +108,7 @@ async function main () {
   }
 
   await bot.start()
-  log(`bot "${BOT_NAME}" activo en ${BOT_APP}`)
+  log(`bot "${BOT_NAME}" running on ${BOT_APP}`)
 
   const shutdown = async () => { try { await bot.stop() } catch (_) {}; process.exit(0) }
   process.on('SIGTERM', shutdown)

@@ -279,7 +279,7 @@ export class ChatBot {
     }
     this._arm(ms)
     const s = Math.round(ms / 1000)
-    this.log(`⏳ próx ~${s >= 90 ? Math.round(s / 60) + 'min' : s + 's'} (interés ${this.interest.toFixed(2)}${this.awaiting ? ', en espera' : ''})`)
+    this.log(`⏳ next ~${s >= 90 ? Math.round(s / 60) + 'min' : s + 's'} (interest ${this.interest.toFixed(2)}${this.awaiting ? ', waiting' : ''})`)
   }
 
   /** Un mensaje entrante interesante puede adelantar la próxima intervención. */
@@ -454,7 +454,7 @@ export class ChatBot {
   _onHumanDetected () {
     this.interest = clamp(Math.max(this.interest, 0.6))
     this._arm(randInt(4000, 20000)) // me activo pronto para atender al usuario real
-    this.log('usuario real detectado → me activo')
+    this.log('real user detected -> waking up')
   }
 
   /** ¿Hay al menos un usuario real activo (visto en los últimos 2 min)? */

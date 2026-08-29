@@ -79,7 +79,7 @@ function main () {
   })
 
   const shutdown = () => {
-    console.log('\nDeteniendo bots…')
+    console.log('\nStopping bots…')
     for (const c of children) { try { c.kill('SIGTERM') } catch (_) {} }
     setTimeout(() => process.exit(0), 1500)
   }

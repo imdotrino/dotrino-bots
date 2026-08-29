@@ -159,7 +159,7 @@ export class ChessBot {
     const cur = this.room?.state
     if (!cur || cur.status !== 'playing' || cur.game?.currentTurn !== this.seat) return
     this.room.action({ type: 'move', from: move.from, to: move.to, piece: move.piece, captured: move.captured })
-    this.log(`muevo ${coord(move.from)}→${coord(move.to)}${move.captured ? ' x' : ''}`)
+    this.log(`playing ${coord(move.from)}→${coord(move.to)}${move.captured ? ' x' : ''}`)
   }
 
   _onEnded () {
