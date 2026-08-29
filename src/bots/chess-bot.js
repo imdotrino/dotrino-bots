@@ -128,7 +128,7 @@ export class ChessBot {
     const oppSeat = st.seats?.[this._opponentSeat()]
     if (oppSeat?.pubkey && this._opponentIsBot()) {
       this.log('opponent is a bot -> not playing bot vs bot, reopening room')
-      this._reopenSoon('rival-bot')
+      this._reopenSoon('opponent-is-a-bot')
       return
     }
 
@@ -164,7 +164,7 @@ export class ChessBot {
 
   _onEnded () {
     const res = this.room?.state?.result
-    this.log(`game over (${res?.reason || '?'}): ${res?.winner ? 'gana ' + res.winner : 'tablas'}`)
+    this.log(`game over (${res?.reason || '?'}): ${res?.winner ? res.winner + ' wins' : 'draw'}`)
     this._reopenSoon('ended')
   }
 

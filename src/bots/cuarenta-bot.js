@@ -300,7 +300,7 @@ export class CuarentaBot {
     if (!cur || cur.status !== 'playing' || cur.game?.phase !== 'play' || cur.game?.turn !== seat) return false
     const captured = move.captured || []
     this.room.action({ type: 'play', card: move.card, captured })
-    this.log(captured.length ? `capturing with ${move.card} (+${captured.length})` : `boto ${move.card}`)
+    this.log(captured.length ? `capturing with ${move.card} (+${captured.length})` : `discarding ${move.card}`)
     return true
   }
 
@@ -363,7 +363,7 @@ export class CuarentaBot {
 
   _onEnded () {
     const res = this.room?.state?.result
-    this.log(`game over (${res?.reason || '?'})${res?.winner ? ' — gana ' + res.winner : ''}`)
+    this.log(`game over (${res?.reason || '?'})${res?.winner ? ' — ' + res.winner + ' wins' : ''}`)
     if (this.role === 'host') this._reopenSoon('ended')
     else this._afterLeaveRescan()
   }
