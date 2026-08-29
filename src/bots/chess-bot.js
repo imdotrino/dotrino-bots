@@ -172,7 +172,7 @@ export class ChessBot {
   // sala vacía esperando rival se queda abierta INDEFINIDAMENTE (no se reabre).
   _reopenSoon (reason = '?') {
     if (this._stopped || this._reopenTimer) return
-    this.log(`reabro sala (motivo: ${reason})`)
+    this.log(`reopening room (reason: ${reason})`)
     this._reopenTimer = setTimeout(() => {
       this._reopenTimer = null
       this._openRoom().catch(e => this.log('reopen err', e.message))

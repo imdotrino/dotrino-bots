@@ -385,7 +385,7 @@ export class CuarentaBot {
   // jugadores se queda abierta indefinidamente (no se reabre).
   _reopenSoon (reason = '?') {
     if (this._stopped || this._reopenTimer || this.role !== 'host') return
-    this.log(`reabro mesa (motivo: ${reason})`)
+    this.log(`reopening table (reason: ${reason})`)
     this._reopenTimer = setTimeout(() => {
       this._reopenTimer = null
       this._openRoom().catch(e => this.log('reopen err', e.message))
