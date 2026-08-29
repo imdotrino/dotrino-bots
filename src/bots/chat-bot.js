@@ -111,7 +111,7 @@ export class ChatBot {
 
   async join () {
     await this.client.publish(this.channel, { nickname: this.nickname, roomName: this.room })
-    this.log(`unido a #${this.room} (token ${this.myToken?.slice(0, 8)}…)`)
+    this.log(`joined #${this.room} (token ${this.myToken?.slice(0, 8)}…)`)
     let tokens = []
     try { tokens = await this.client.list(this.channel) } catch (_) {}
     const others = tokens.filter(t => t !== this.myToken)

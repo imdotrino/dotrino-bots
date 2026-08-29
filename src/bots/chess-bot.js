@@ -164,7 +164,7 @@ export class ChessBot {
 
   _onEnded () {
     const res = this.room?.state?.result
-    this.log(`partida terminada (${res?.reason || '?'}): ${res?.winner ? 'gana ' + res.winner : 'tablas'}`)
+    this.log(`game over (${res?.reason || '?'}): ${res?.winner ? 'gana ' + res.winner : 'tablas'}`)
     this._reopenSoon('ended')
   }
 

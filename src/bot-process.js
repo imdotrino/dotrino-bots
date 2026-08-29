@@ -88,7 +88,7 @@ async function buildCuarenta (identity) {
     gameId: 'cuarenta', seats, engine, proxy, identity,
     start: 'manual', onSeatVacated: 'pause', allowSpectators: true, playerName: BOT_NAME
   })
-  log(`cuarenta ${role} mesa${tableSize}, motor ${strategy.name}`)
+  log(`cuarenta ${role} table${tableSize}, engine ${strategy.name}`)
   return new CuarentaBot({
     lobby, identity, rules, engine: strategy, setPendingConfig, discoveryChannel, roomChannel,
     role, tableSize, registryDir: path.dirname(BOT_DIR), nickname: BOT_NAME, log

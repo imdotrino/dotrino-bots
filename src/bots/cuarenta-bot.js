@@ -363,7 +363,7 @@ export class CuarentaBot {
 
   _onEnded () {
     const res = this.room?.state?.result
-    this.log(`partida terminada (${res?.reason || '?'})${res?.winner ? ' — gana ' + res.winner : ''}`)
+    this.log(`game over (${res?.reason || '?'})${res?.winner ? ' — gana ' + res.winner : ''}`)
     if (this.role === 'host') this._reopenSoon('ended')
     else this._afterLeaveRescan()
   }
