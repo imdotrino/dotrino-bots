@@ -259,7 +259,7 @@ export class ChatBot {
     this.log(`→ [${mode} i=${this.interest.toFixed(2)}] ${text}`)
     if (track && /\?/.test(text)) {
       this.awaiting = { since: Date.now(), deadline: Date.now() + randInt(60000, 240000), attempts: 0 }
-      this.log('pregunta hecha → standby esperando respuesta')
+      this.log('question asked -> standby, waiting for a reply')
     }
   }
 

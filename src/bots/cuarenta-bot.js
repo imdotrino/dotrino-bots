@@ -130,7 +130,7 @@ export class CuarentaBot {
     room.takeSeat(seat)
     room.setReady(true)
     this._bind(room)
-    this.log(`table for ${this.tableSize} open (${room.roomId?.slice(0, 8)}…), seat ${seat}, engine ${this.engine?.name || '?'} — espero ${this.tableSize === 2 ? 'rival' : 'jugadores'}`)
+    this.log(`table for ${this.tableSize} open (${room.roomId?.slice(0, 8)}…), seat ${seat}, engine ${this.engine?.name || '?'} — waiting for ${this.tableSize === 2 ? 'an opponent' : 'players'}`)
     this._republish()
     this._onUpdate()
   }

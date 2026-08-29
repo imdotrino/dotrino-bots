@@ -112,7 +112,7 @@ export class ChessBot {
     room.on('update', () => { if (this.room === room) this._onUpdate() })
     room.on('ended', () => { if (this.room === room) this._onEnded() })
     room.on('closed', () => { if (this.room === room) this._reopenSoon('closed') })
-    this.log(`public room open (${room.roomId?.slice(0, 8)}…), playing as ${this.seat} with engine ${this.engine?.name || '?'}, espero rival`)
+    this.log(`public room open (${room.roomId?.slice(0, 8)}…), playing as ${this.seat} with engine ${this.engine?.name || '?'}, waiting for an opponent`)
     this._republish()
     this._onUpdate()
   }
