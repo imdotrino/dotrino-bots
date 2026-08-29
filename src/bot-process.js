@@ -58,7 +58,7 @@ async function buildChess (identity) {
     gameId: 'chess', seats: ['white', 'black'], engine, proxy, identity,
     start: 'full', onSeatVacated: 'pause', playerName: BOT_NAME
   })
-  log(`motor de ajedrez: ${strategy.name}`)
+  log(`chess engine: ${strategy.name}`)
   return new ChessBot({ lobby, identity, engineRules: rules, engine: strategy, discoveryChannel, roomChannel, registryDir: path.dirname(BOT_DIR), nickname: BOT_NAME, log })
 }
 
@@ -96,7 +96,7 @@ async function buildCuarenta (identity) {
 }
 
 async function main () {
-  if (!BOT_DIR) throw new Error('BOT_DIR requerido')
+  if (!BOT_DIR) throw new Error('BOT_DIR is required')
   const identity = await Identity.connect({ dir: BOT_DIR })
 
   let bot
@@ -104,7 +104,7 @@ async function main () {
     case 'chat': bot = await buildChat(identity); break
     case 'chess': bot = await buildChess(identity); break
     case 'cuarenta': bot = await buildCuarenta(identity); break
-    default: throw new Error(`App no soportada todavía: ${BOT_APP}`)
+    default: throw new Error(`Unsupported app: ${BOT_APP}`)
   }
 
   await bot.start()

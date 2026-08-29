@@ -58,7 +58,7 @@ export class Brain {
     if (!res.ok) throw new Error(`deepseek ${res.status}: ${await res.text().catch(() => '')}`)
     const data = await res.json()
     const text = data?.choices?.[0]?.message?.content?.trim()
-    if (!text) throw new Error('deepseek: respuesta vacía')
+    if (!text) throw new Error('deepseek: empty response')
     return text
   }
 
@@ -81,41 +81,43 @@ export class Brain {
       `Eres ${this.persona}.`,
       `Estás en una sala de chat llamada "#${room}" con otras personas.`,
       'Escribe UN solo mensaje corto y natural en español (máx ~140 caracteres),',
+      'en español neutro y de TUTEO: nada de voseo ni argentinismos (nunca "vos", "podés",',
+      '"tenés", "mirá", "dale", "che", "acá"; di "tú", "puedes", "tienes", "mira", "aquí").',
       'como en un chat informal. No te presentes como bot ni IA, no expliques nada meta.',
       'IMPORTANTE: NO empieces el mensaje con risas ("jaja", "jajaja", "jeje").',
       'NO repitas ni cites entre comillas palabras o frases que ya se dijeron en el chat;',
-      'aportá algo NUEVO con tus propias palabras. NO te obsesiones con un mismo tema',
+      'aporta algo NUEVO con tus propias palabras. NO te obsesiones con un mismo tema',
       'ni vuelvas siempre al mismo asunto (p.ej. el mismo animal, la misma anécdota);',
-      'variá. Evita las comillas. Nada de emojis recargados; a lo sumo uno ocasional.'
+      'varía. Evita las comillas. Nada de emojis recargados; a lo sumo uno ocasional.'
     ].join(' ')
 
     const convo = history.slice(-10).map(h => `${h.isMe ? 'Tú' : h.name}: ${h.text}`).join('\n')
     const q = wantQuestion
-      ? ' Terminá con una pregunta concreta para que alguien te conteste.'
-      : ' Hacé una afirmación o comentario; NO termines tu mensaje con una pregunta.'
+      ? ' Termina con una pregunta concreta para que alguien te conteste.'
+      : ' Haz una afirmación o comentario; NO termines tu mensaje con una pregunta.'
     let instruction
     switch (mode) {
       case 'opener':
-        instruction = 'El chat está callado. Rompé el hielo con algo breve y simpático.' + q
+        instruction = 'El chat está callado. Rompe el hielo con algo breve y simpático.' + q
         break
       case 'shift':
         if (headline) {
-          instruction = `La charla se trabó o se apagó. Tomá esta noticia actual como disparador: «${headline}». Arrancá un tema NUEVO comentándola con tu estilo, en una línea, breve y natural; NO la pegues como titular ni la cites textual, hablá como en un chat.` + q
+          instruction = `La charla se trabó o se apagó. Toma esta noticia actual como disparador: «${headline}». Arranca un tema NUEVO comentándola con tu estilo, en una línea, breve y natural; NO la pegues como titular ni la cites textual, habla como en un chat.` + q
         } else {
-          instruction = `La charla se está volviendo repetitiva. Enganchá con la palabra «${trigger || ''}» de lo último que se dijo y usala para cambiar a un tema NUEVO y distinto, de forma natural.` + q
+          instruction = `La charla se está volviendo repetitiva. Engancha con la palabra «${trigger || ''}» de lo último que se dijo y úsala para cambiar a un tema NUEVO y distinto, de forma natural.` + q
         }
         break
       case 'reply':
-        instruction = `Te hablaron directamente: «${mentionText || ''}». Contestá ESO de una, respondiendo lo que pregunta o dice. NO hace falta repetir el nombre de quien te habló (ya están conversando, queda raro). Si te pregunta un dato que no tenés, improvisá una respuesta creíble y breve; no lo ignores ni cambies de tema.` + q
+        instruction = `Te hablaron directamente: «${mentionText || ''}». Contesta ESO de una, respondiendo lo que pregunta o dice. NO hace falta repetir el nombre de quien te habló (ya están conversando, queda raro). Si te pregunta un dato que no tienes, improvisa una respuesta creíble y breve; no lo ignores ni cambies de tema.` + q
         break
       case 'nudge':
-        instruction = 'Hiciste una pregunta y nadie respondió todavía. Insistí con ganas, en tono liviano y bromista (tipo "¿hooola? jaja, nadie?").'
+        instruction = 'Hiciste una pregunta y nadie respondió todavía. Insiste con ganas, en tono ligero y bromista (tipo "¿hooola? jaja, ¿nadie?").'
         break
       case 'annoyed':
-        instruction = 'Hiciste una pregunta y SIGUEN sin contestarte. Mostrá fastidio leve y resignación, breve y con humor seco (tipo "bueno, hablo solo entonces, joya").'
+        instruction = 'Hiciste una pregunta y SIGUEN sin contestarte. Muestra fastidio leve y resignación, breve y con humor seco (tipo "bueno, hablo solo entonces").'
         break
       default:
-        instruction = 'Respondé al hilo de forma natural' + (targetName ? `, dirigiéndote a ${targetName}` : '') + '.' + q
+        instruction = 'Responde al hilo de forma natural' + (targetName ? `, dirigiéndote a ${targetName}` : '') + '.' + q
     }
     const user = (convo ? `Conversación reciente:\n${convo}\n\n` : '') + instruction
     try {
@@ -155,10 +157,10 @@ export class Brain {
 
   _fallbackChat (history, mode = 'normal', trigger = null) {
     const pick = (arr) => arr[Math.floor(Math.random() * arr.length)]
-    if (mode === 'nudge') return pick(['¿hooola? jaja nadie?', '¿se cayó el chat o qué?', 'che, ¿alguien ahí?'])
-    if (mode === 'annoyed') return pick(['bueno, hablo solo entonces', 'nada, dejá', 'ok, me quedé hablando solo jaja'])
-    if (mode === 'shift' && trigger) return pick([`hablando de ${trigger}, ¿vieron lo último?`, `che, lo de ${trigger} me hizo acordar a otra cosa`])
-    if (mode === 'opener' || history.length === 0) return pick(['¿qué tal andan?', 'buenas, ¿cómo va todo?', '¿alguien por acá?'])
-    return pick(['jaja sí, te entiendo', 'interesante eso, ¿y cómo fue?', 'totalmente de acuerdo', 'no había pensado en eso, ¿vos qué opinás?'])
+    if (mode === 'nudge') return pick(['¿hooola? jaja ¿nadie?', '¿se cayó el chat o qué?', 'oigan, ¿alguien ahí?'])
+    if (mode === 'annoyed') return pick(['bueno, hablo solo entonces', 'nada, olvídalo', 'ok, me quedé hablando solo jaja'])
+    if (mode === 'shift' && trigger) return pick([`hablando de ${trigger}, ¿vieron lo último?`, `lo de ${trigger} me recordó a otra cosa`])
+    if (mode === 'opener' || history.length === 0) return pick(['¿qué tal andan?', 'buenas, ¿cómo va todo?', '¿alguien por aquí?'])
+    return pick(['jaja sí, te entiendo', 'interesante eso, ¿y cómo fue?', 'totalmente de acuerdo', 'no había pensado en eso, ¿tú qué opinas?'])
   }
 }

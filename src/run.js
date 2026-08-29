@@ -55,7 +55,7 @@ function main () {
   const bots = resolveBots(args)
 
   console.log(`Dotrino bots — app=${args.app} room=#${args.room} bots=${bots.length}`)
-  if (!DEEPSEEK_API_KEY) console.log('⚠ DEEPSEEK_API_KEY no encontrada: los bots usarán respuestas de reserva.')
+  if (!DEEPSEEK_API_KEY) console.log('⚠ DEEPSEEK_API_KEY not found: bots will use fallback replies.')
 
   const children = []
   bots.forEach((b, i) => {
@@ -75,7 +75,7 @@ function main () {
       stdio: 'inherit'
     })
     children.push(child)
-    child.on('exit', (code) => console.log(`bot ${b.name} terminó (code ${code})`))
+    child.on('exit', (code) => console.log(`bot ${b.name} exited (code ${code})`))
   })
 
   const shutdown = () => {

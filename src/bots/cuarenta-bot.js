@@ -77,7 +77,7 @@ export class CuarentaBot {
     this._registerSelf()  // publico mi pubkey en el registro de la flota
     this._reloadRegistry() // y cargo las de mis compañeros
     this.lobby.transport.on('reconnect', () => {
-      this.log('reconexión')
+      this.log('reconnected')
       if (this.role === 'host') this._openRoom().catch(e => this.log('reopen err', e.message))
       else this._scan().catch(() => {})
     })
@@ -130,7 +130,7 @@ export class CuarentaBot {
     room.takeSeat(seat)
     room.setReady(true)
     this._bind(room)
-    this.log(`mesa de ${this.tableSize} abierta (${room.roomId?.slice(0, 8)}…), asiento ${seat}, motor ${this.engine?.name || '?'} — espero ${this.tableSize === 2 ? 'rival' : 'jugadores'}`)
+    this.log(`table for ${this.tableSize} open (${room.roomId?.slice(0, 8)}…), seat ${seat}, engine ${this.engine?.name || '?'} — espero ${this.tableSize === 2 ? 'rival' : 'jugadores'}`)
     this._republish()
     this._onUpdate()
   }
@@ -157,7 +157,7 @@ export class CuarentaBot {
     try {
       this.setPendingConfig({ activeSeats: occ }) // orden p1..p4 → equipos {p1,p3} vs {p2,p4}
       const ok = this.room.start()
-      this.log(`arranco partida de ${this.tableSize} (humanos: ${humans.length})${ok ? '' : ' (start rechazado)'}`)
+      this.log(`starting a ${this.tableSize}-player game (humans: ${humans.length})${ok ? '' : ' (start rejected)'}`)
     } catch (e) { this.log('start err', e.message) }
   }
 
@@ -186,7 +186,7 @@ export class CuarentaBot {
       this.room = room
       this._claiming = false
       this._bind(room)
-      this.log(`uniéndome a mesa de la flota (${pick.roomId?.slice(0, 8)}…)…`)
+      this.log(`joining a fleet table (${pick.roomId?.slice(0, 8)}…)…`)
       this._onUpdate() // por si el estado ya llegó
     } catch (e) { this.log('join err', e.message); this.room = null }
   }
@@ -201,7 +201,7 @@ export class CuarentaBot {
         const ok = this.room.takeSeat() // primer asiento libre
         if (ok) {
           this.room.setReady(true)
-          setTimeout(() => { if (this._mySeat()) this.log(`me siento en ${this._mySeat()}, listo — espero al humano`) }, 600)
+          setTimeout(() => { if (this._mySeat()) this.log(`seated at ${this._mySeat()}, ready — waiting for a human`) }, 600)
         }
         // si el asiento no "prende" (carrera con otro filler), reintentar luego
         setTimeout(() => { if (!this._mySeat()) this._claiming = false }, 1500)
@@ -218,7 +218,7 @@ export class CuarentaBot {
         const s2 = this.room?.state
         if (s2 && s2.status === 'waiting' && this._openCount(s2) === 0 && this._mySeat() &&
             this._occupied(s2).every(id => this._isBot(s2.seats[id].pubkey))) {
-          this.log('mesa llena de bots → me retiro para dejar entrar a un humano')
+          this.log('table full of bots -> leaving to make room for a human')
           this._afterLeaveRescan()
         }
       }, randInt(500, 4000))
@@ -300,7 +300,7 @@ export class CuarentaBot {
     if (!cur || cur.status !== 'playing' || cur.game?.phase !== 'play' || cur.game?.turn !== seat) return false
     const captured = move.captured || []
     this.room.action({ type: 'play', card: move.card, captured })
-    this.log(captured.length ? `levanto con ${move.card} (+${captured.length})` : `boto ${move.card}`)
+    this.log(captured.length ? `capturing with ${move.card} (+${captured.length})` : `boto ${move.card}`)
     return true
   }
 
@@ -324,7 +324,7 @@ export class CuarentaBot {
       index = re.index
     }
     this.room.action({ type: 'cut', index })
-    this.log('corto por la data')
+    this.log('discarding for the data')
     return true
   }
 
@@ -340,7 +340,7 @@ export class CuarentaBot {
     if (!cur || cur.status !== 'playing' || cur.game?.phase !== 'claim' || cur.game?.claimCardId !== g.claimCardId) return false
     // claimCardId → si el robo llega tarde (otra carta), el motor lo IGNORA (no falta).
     this.room.action({ type: 'rob', captured: rob.captured, claimCardId: g.claimCardId })
-    this.log(`robo la caída (+${rob.captured.length})`)
+    this.log(`taking the caída (+${rob.captured.length})`)
     return true
   }
 
@@ -357,7 +357,7 @@ export class CuarentaBot {
     if (!cur || cur.status !== 'playing' || cur.game?.phase !== 'play' || cur.game?.carry?.value !== g.carry.value) return false
     // carryValue → si la continuación ya avanzó (6→7), el motor IGNORA el robo (no falta).
     this.room.action({ type: 'rob', captured: rob.captured, carryValue: g.carry.value })
-    this.log(`robo la continuación ${g.carry.value} (+${rob.captured.length})`)
+    this.log(`taking the carry ${g.carry.value} (+${rob.captured.length})`)
     return true
   }
 

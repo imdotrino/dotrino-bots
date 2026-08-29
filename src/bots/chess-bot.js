@@ -61,7 +61,7 @@ export class ChessBot {
     this._presenceTimer = setInterval(() => this._republish(), 10 * 60 * 1000)
     // Reabrir la sala si la conexión reconecta con token nuevo (cambia el roomId).
     this.lobby.transport.on('reconnect', () => {
-      this.log('reconexión → reabro sala pública')
+      this.log('reconnected -> reopening public room')
       this._openRoom().catch(e => this.log('reopen err', e.message))
     })
     await this._openRoom()
@@ -112,7 +112,7 @@ export class ChessBot {
     room.on('update', () => { if (this.room === room) this._onUpdate() })
     room.on('ended', () => { if (this.room === room) this._onEnded() })
     room.on('closed', () => { if (this.room === room) this._reopenSoon('closed') })
-    this.log(`sala pública abierta (${room.roomId?.slice(0, 8)}…), juego de ${this.seat} con motor ${this.engine?.name || '?'}, espero rival`)
+    this.log(`public room open (${room.roomId?.slice(0, 8)}…), playing as ${this.seat} with engine ${this.engine?.name || '?'}, espero rival`)
     this._republish()
     this._onUpdate()
   }
@@ -127,7 +127,7 @@ export class ChessBot {
     // flota, libero la sala (queda abierta para un humano).
     const oppSeat = st.seats?.[this._opponentSeat()]
     if (oppSeat?.pubkey && this._opponentIsBot()) {
-      this.log('rival es un bot → no juego entre bots, reabro sala')
+      this.log('opponent is a bot -> not playing bot vs bot, reopening room')
       this._reopenSoon('rival-bot')
       return
     }

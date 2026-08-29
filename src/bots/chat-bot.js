@@ -99,12 +99,12 @@ export class ChatBot {
     let bootToken = true
     this.client.on('token', () => {
       if (bootToken) { bootToken = false; return }
-      this.log('reconexión (token nuevo) → re-publico y reanuncio')
+      this.log('reconnected (new token) -> republishing and re-announcing')
       this.join().catch(e => this.log('re-join err', e.message))
     })
-    this.client.on('disconnect', () => this.log('socket caído'))
+    this.client.on('disconnect', () => this.log('socket down'))
     this.client.on('reconnect_failed', () => {
-      this.log('reconexión agotada → reintento connect')
+      this.log('reconnect attempts exhausted -> retrying connect')
       this.client.connect().catch(() => {})
     })
   }
@@ -205,14 +205,14 @@ export class ChatBot {
       // Alguien habló después de mi pregunta → lo tomo como respuesta.
       this.awaiting = null
       this.interest = clamp(this.interest + 0.2)
-      this.log(`me respondieron → re-enganchado (interés ${this.interest.toFixed(2)})`)
+      this.log(`got a reply -> re-engaged (interest ${this.interest.toFixed(2)})`)
     }
     if (mentioned) {
       // Me nombraron directamente → interés alto, le respondo a esa persona pronto.
       this._mention = { name: fromName, text }
       this.interest = clamp(Math.max(this.interest + 0.4, 0.92))
       this._arm(randInt(6000, 22000))
-      this.log(`me nombró ${fromName || 'alguien'} → interés ${this.interest.toFixed(2)}, le respondo`)
+      this.log(`mentioned by ${fromName || 'someone'} -> interest ${this.interest.toFixed(2)}, replying`)
       return
     }
     this._pullCloser() // un mensaje interesante me acerca la próxima intervención
@@ -373,12 +373,12 @@ export class ChatBot {
       await this._speak('nudge', {}, false)
       this.awaiting.deadline = Date.now() + randInt(45000, 120000)
       this.interest = clamp(this.interest - 0.12)
-      this.log(`sin respuesta → empujón (interés ${this.interest.toFixed(2)})`)
+      this.log(`no reply -> nudging (interest ${this.interest.toFixed(2)})`)
     } else {
       await this._speak('annoyed', {}, false)
       this.awaiting = null
       this.interest = 0.12 // se desengancha → próximas intervenciones muy espaciadas
-      this.log('sin respuesta → fastidiado, me desengancho')
+      this.log('no reply -> annoyed, disengaging')
     }
   }
 
