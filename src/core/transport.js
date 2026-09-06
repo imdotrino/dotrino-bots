@@ -40,9 +40,8 @@ export async function createTransport ({ identity, dir, url = PROXY_URL }) {
   const identify = async () => {
     const publickey = identity.me?.publickey
     if (!publickey || !client.token) return
-    const data = { op: 'identify', publickey, token: client.token, ts: Date.now() }
-    const { signature } = await identity.signData(data)
-    await client.identify({ data, signature })
+    // El sobre lo arma el pilar (`identifyAs`), que le pone el destinatario.
+    await client.identifyAs({ publickey, sign: (d) => identity.signData(d) })
   }
   await identify()
   // Re-identificar al reconectar (el token cambia).
