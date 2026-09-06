@@ -1,7 +1,7 @@
 {
   "name": "@dotrino/bots",
   "version": "0.1.0",
-  "description": "Colecci\u00f3n de bots headless que simulan usuarios reales en las apps del ecosistema Dotrino (identidad propia, transporte por el proxy, cerebro DeepSeek, latencias humanas).",
+  "description": "Colección de bots headless que simulan usuarios reales en las apps del ecosistema Dotrino (identidad propia, transporte por el proxy, cerebro DeepSeek, latencias humanas).",
   "type": "module",
   "private": true,
   "bin": {
@@ -21,15 +21,16 @@
   },
   "dependencies": {
     "@dotrino/identity": "0.62.0",
-    "@dotrino/lobby": "0.5.0",
+    "@dotrino/lobby": "0.6.0",
     "@dotrino/proxy-client": "0.13.1",
+    "@dotrino/reputation": "0.12.0",
     "stockfish": "^18.0.7",
     "ws": "^8.18.0"
   },
   "devDependencies": {
+    "@types/node": "^22.0.0",
     "pm2": "^5.4.3",
-    "typescript": "5.9.3",
-    "@types/node": "^22.0.0"
+    "typescript": "5.9.3"
   },
   "author": "seyacat",
   "license": "MIT"
