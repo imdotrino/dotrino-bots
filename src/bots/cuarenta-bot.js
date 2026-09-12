@@ -138,7 +138,10 @@ export class CuarentaBot {
   _republish () {
     if (this._stopped || !this.room || this.role !== 'host') return
     try {
-      this.lobby.transport.publish(this.discoveryChannel(this.gameId), { name: this.nickname, gameType: this.gameId })
+      // SIN METADATOS: el proxio se queda `{ name, gameType }` y no se lo da a nadie,
+      // así que el apodo del bot solo viajaba para él (@dotrino/lobby 0.8.0 los quitó
+      // por lo mismo). Lo que ve quien busca sale del resumen, que va sellado.
+      this.lobby.transport.publish(this.discoveryChannel(this.gameId))
       if (this.room.roomId) this.lobby.transport.publish(this.roomChannel(this.gameId, this.room.roomId))
     } catch (_) {}
   }
@@ -182,7 +185,8 @@ export class CuarentaBot {
     try {
       // El estado de asientos NO está listo apenas resuelve joinRoom: me siento en el
       // handler 'update', cuando ya conozco los asientos (ver _onUpdate, rama filler).
-      const room = await this.lobby.joinRoom(pick.roomId, { playerName: this.nickname })
+      // Con la pubkey del host (viene en el resumen) el saludo ya sale sellado.
+      const room = await this.lobby.joinRoom(pick.roomId, { playerName: this.nickname, hostPubkey: pick.hostPubkey })
       this.room = room
       this._claiming = false
       this._bind(room)

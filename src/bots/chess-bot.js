@@ -91,7 +91,10 @@ export class ChessBot {
   _republish () {
     if (this._stopped || !this.room) return
     try {
-      this.lobby.transport.publish(this.discoveryChannel(this.gameId), { name: this.nickname, gameType: this.gameId })
+      // SIN METADATOS: el proxio se queda `{ name, gameType }` y no se lo da a nadie,
+      // así que el apodo del bot solo viajaba para él (@dotrino/lobby 0.8.0 los quitó
+      // por lo mismo). Lo que ve quien busca sale del resumen, que va sellado.
+      this.lobby.transport.publish(this.discoveryChannel(this.gameId))
       if (this.room.roomId) this.lobby.transport.publish(this.roomChannel(this.gameId, this.room.roomId))
     } catch (_) {}
   }
