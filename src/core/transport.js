@@ -25,15 +25,27 @@ import { installNodeGlobals } from './node-globals.js'
 export async function createTransport ({ identity, dir, url = PROXY_URL }) {
   installNodeGlobals(dir)
   // Import dinámico DESPUÉS de instalar los globals que el paquete usa.
-  const { getWebSocketProxyClient } = await import('@dotrino/proxy-client')
+  const { getWebSocketProxyClient, identitySealing } = await import('@dotrino/proxy-client')
 
   // WebRTC off: los bots usan el proxy como transporte (no hace falta P2P y
   // RTCPeerConnection no existe en Node). Reconexión prácticamente ilimitada:
   // un bot de larga duración no debe rendirse tras 5 intentos.
+  //
+  // SELLADO (CONVENCIONES §4.1): el proxio enruta pero no cifra. `requireSealed` corta
+  // en las dos direcciones, y va puesto ANTES de conectar: sin llave de cifrado no hay
+  // con qué sellar, así que se para aquí en vez de arrancar hablando en claro.
+  const myEncPub = await identity.getEncryptionPubkey()
+  if (!myEncPub) {
+    const e = new Error('[bots] the identity returned no encryption key: nothing can be sealed')
+    e.code = 'no-encpub'
+    throw e
+  }
   const client = getWebSocketProxyClient({
     url, enableWebRTC: false, autoReconnect: true,
-    maxReconnectAttempts: 100000, reconnectDelay: 4000
+    maxReconnectAttempts: 100000, reconnectDelay: 4000,
+    requireSealed: true
   })
+  client.updateConfig({ myEncPub, sealing: identitySealing(identity, { app: 'dotrino-chat' }) })
 
   const token = await client.connect()
 

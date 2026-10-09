@@ -6,6 +6,11 @@
  * de identidad (IDENTIFY_CHALLENGE/RESPONSE), intercambia encryptionPubkey y
  * envía/recibe mensajes cifrados E2E (CHAT_ENC).
  *
+ * TODO LO DIRIGIDO VA SELLADO (CONVENCIONES §4.1), igual que en la app: el apodo, los
+ * latidos y el reto de identidad cruzaban el proxio legibles. De un canal solo salen
+ * tokens, y un token no dice de quién es: lo dice el saludo del transporte (`helloTo`).
+ * A quien aún no ha saludado se le GUARDA lo suyo; nunca se le manda en claro.
+ *
  * Comportamiento conversacional (lo decide el bot; DeepSeek sólo redacta):
  *   - INTERÉS (0..1): indicador que el bot maneja. Gobierna la latencia hasta
  *     responder, de ~30s (enganchado) a ~30min (desganado). Sube con novedad y
@@ -30,6 +35,7 @@ function parse (raw) {
   catch { return { type: null, payload: null } }
 }
 
+const PENDING_MAX = 20 // tope de la cola de quien todavía no ha saludado
 const MAX_HISTORY = 50 // memoria acotada: el bot recuerda a lo sumo 50 mensajes
 const clamp = (v, lo = 0.05, hi = 1) => Math.max(lo, Math.min(hi, v))
 const STOP = new Set(['para', 'pero', 'como', 'esto', 'esta', 'este', 'eso', 'esa', 'que', 'qué', 'con', 'por', 'una', 'unos', 'unas', 'los', 'las', 'del', 'más', 'mas', 'muy', 'sin', 'sus', 'son', 'fue', 'hay', 'ese', 'aqui', 'aquí', 'todo', 'toda', 'nada', 'algo', 'cosa', 'cosas', 'tipo', 'igual', 'gente', 'jaja', 'jajaja'])
@@ -57,6 +63,8 @@ export class ChatBot {
     this._fireAt = 0
     this._timers = []
     this._stopped = false
+    this._pending = new Map() // token -> mensajes que esperan a su saludo
+    this._warned = new Set()  // `token|code` ya avisado (una vez por motivo)
   }
 
   get channel () { return `chat_room_${this.room}` }
@@ -84,15 +92,19 @@ export class ChatBot {
   }
 
   _wireEvents () {
-    this.client.on('message', (from, payload) => {
+    this.client.on('message', (from, payload, meta) => {
+      // El pilar es el único que abre el sobre; aquí solo se comprueba que venía sellado.
+      if (!meta?.sealed) { this.log('dropped a directed message that was not sealed'); return }
       const raw = typeof payload === 'string' ? payload : JSON.stringify(payload)
       this._onMessage(from, raw).catch(e => this.log('onMessage err', e.message))
     })
     this.client.on('channel_joined', (channel, token) => {
       if (channel === this.channel && token !== this.myToken) this._discover(token)
     })
-    this.client.on('peer_disconnected', (token) => { this.members.delete(token) })
-    this.client.on('channel_left', (channel, token) => { if (channel === this.channel) this.members.delete(token) })
+    // «Este token es de esta identidad»: sale lo que le estaba esperando y se le reta.
+    this.client.on('peer_identity', (token, publickey) => this._onPeerIdentity(token, publickey))
+    this.client.on('peer_disconnected', (token) => { this._forget(token) })
+    this.client.on('channel_left', (channel, token) => { if (channel === this.channel) this._forget(token) })
 
     // Reconexión: el proxy asigna un token nuevo → hay que re-publicar y
     // reanunciarse, si no el bot queda fuera del canal aunque el proceso viva.
@@ -118,19 +130,73 @@ export class ChatBot {
     for (const t of others) this._discover(t)
     if (others.length) {
       const announce = fmt('JOIN_ANNOUNCE', { nickname: this.nickname, roomName: this.room, timestamp: Date.now() })
-      try { this.client.send(others, announce) } catch (_) {}
+      await this._send(others, announce)
     }
   }
 
   _discover (token) {
     if (token === this.myToken) return
     if (!this.members.has(token)) this.members.set(token, { token, nickname: token, lastSeen: Date.now() })
+    // Si ya se sabe de quién es, se le reta; si no, se le saluda y el reto sale al contestar.
+    if (this.client.pubkeyOfToken(token)) this._challenge(token).catch(() => {})
+    else this._greet(token)
+  }
+
+  _greet (token) {
+    try { this.client.helloTo(token) } catch (e) { this.log('greeting failed:', e?.code || e?.message) }
+  }
+
+  _forget (token) {
+    this.members.delete(token)
+    this._pending.delete(token)
+    for (const k of [...this._warned]) if (k.startsWith(token + '|')) this._warned.delete(k)
+  }
+
+  _onPeerIdentity (token, publickey) {
+    if (!publickey || token === this.myToken) return
+    const mem = this.members.get(token) || { token, nickname: token }
+    if (!mem.pubkey) mem.pubkey = publickey
+    mem.lastSeen = Date.now()
+    this.members.set(token, mem)
     this._challenge(token).catch(() => {})
+    const queued = this._pending.get(token)
+    if (queued && queued.length) {
+      this._pending.delete(token)
+      for (const raw of queued) this._send([token], raw).catch(() => {})
+    }
+  }
+
+  /**
+   * Manda algo dirigido, SELLADO. A quien no ha saludado se le guarda y se le saluda;
+   * a quien no se le puede sellar no se le manda nada y se dice una vez por motivo.
+   */
+  async _send (tokens, raw) {
+    const list = (Array.isArray(tokens) ? tokens : [tokens]).filter(t => t && t !== this.myToken)
+    await Promise.all(list.map(async (t) => {
+      const peerPubkey = this.client.pubkeyOfToken(t)
+      if (!peerPubkey) {
+        const queued = this._pending.get(t) || []
+        if (queued.length >= PENDING_MAX) queued.shift()
+        queued.push(raw)
+        this._pending.set(t, queued)
+        this._greet(t)
+        return
+      }
+      try {
+        await this.client.sendSealedTo(t, raw, { peerPubkey })
+      } catch (e) {
+        const code = e?.code || 'unknown'
+        const k = `${t}|${code}`
+        if (this._warned.has(k)) return
+        this._warned.add(k)
+        this.log(`cannot seal to ${t.slice(0, 8)}…: ${code}`)
+      }
+    }))
   }
 
   async _challenge (token) {
     const { nonce } = await this.id.makeChallenge()
-    this.client.send([token], fmt('IDENTIFY_CHALLENGE', { nonce }))
+    await this._send([token], fmt('IDENTIFY_CHALLENGE', { nonce }))
   }
 
   async _onMessage (from, raw) {
@@ -142,7 +208,7 @@ export class ChatBot {
       case 'IDENTIFY_CHALLENGE': {
         if (!payload?.nonce) return
         const resp = await this.id.signChallenge(payload.nonce)
-        this.client.send([from], fmt('IDENTIFY_RESPONSE', resp))
+        await this._send([from], fmt('IDENTIFY_RESPONSE', resp))
         break
       }
       case 'IDENTIFY_RESPONSE': {
@@ -170,7 +236,7 @@ export class ChatBot {
       case 'RATING_QUERY': {
         if (!payload?.subject || !payload?.queryId) return
         const { mine, endorsements } = await this.id.getRatingsForSubject(payload.subject)
-        this.client.send([from], fmt('RATING_REPLY', { queryId: payload.queryId, subject: payload.subject, mine, endorsements }))
+        await this._send([from], fmt('RATING_REPLY', { queryId: payload.queryId, subject: payload.subject, mine, endorsements }))
         break
       }
       default:
@@ -229,7 +295,7 @@ export class ChatBot {
     if (recipients.length === 0) return false
     const envelope = await this.id.encrypt(recipients, text)
     const msg = fmt('CHAT_ENC', { envelope, nickname: this.nickname, roomName: this.room, timestamp: Date.now() })
-    this.client.send(recipients.map(r => r.token), msg)
+    await this._send(recipients.map(r => r.token), msg)
     this.history.push({ name: this.nickname, text, isMe: true, ts: Date.now() })
     if (this.history.length > MAX_HISTORY) this.history.shift()
     this.lastSpokeAt = Date.now()
@@ -494,7 +560,7 @@ export class ChatBot {
     for (const t of others) if (!this.members.has(t)) this._discover(t)
     if (others.length) {
       const hb = fmt('HEARTBEAT', { nickname: this.nickname, roomName: this.room, timestamp: Date.now() })
-      try { this.client.send(others, hb) } catch (_) {}
+      await this._send(others, hb)
     }
   }
 
