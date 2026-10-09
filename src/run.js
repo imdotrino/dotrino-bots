@@ -50,7 +50,7 @@ function resolveBots (args) {
   return Array.from({ length: args.count }, (_, i) => personaFor(i))
 }
 
-function main () {
+async function main () {
   const args = parseArgs(process.argv.slice(2))
   const bots = resolveBots(args)
 
@@ -85,6 +85,12 @@ function main () {
   }
   process.on('SIGINT', shutdown)
   process.on('SIGTERM', shutdown)
+
+  // §15: los bots corren desde un checkout; lo que se queda atrás son sus pilares.
+  try {
+    const { watchDependencies } = await import('@dotrino/update/deps')
+    watchDependencies({ dir: path.join(__dirname, '..'), name: 'bots' })
+  } catch (e) { console.error('[update] could not start the watch:', e.code || e.message) }
 }
 
 main()
